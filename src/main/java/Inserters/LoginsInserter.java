@@ -1,5 +1,6 @@
-package entity;
+package Inserters;
 
+import entity.Logins;
 import org.supercsv.cellprocessor.constraint.NotNull;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.CsvBeanReader;
@@ -40,8 +41,14 @@ public class LoginsInserter implements Runnable {
 
             connection = DriverManager.getConnection(jdbcURL, username, password);
             connection.setAutoCommit(false);
-            sql = "create table IF NOT exists logins(Application varchar(100),AppAccountName varchar(100),IsActive boolean,JobTitle varchar(100),Department varchar(100));";
-            connection.prepareStatement(sql);
+//            sql = "create table IF NOT exists logins(" +
+//                    "Application varchar(100)," +
+//                    "AppAccountName varchar(100)," +
+//                    "IsActive boolean," +
+//                    "JobTitle varchar(100)," +
+//                    "Department varchar(100)" +
+//                    ");";
+//            connection.prepareStatement(sql);
             sql = "INSERT INTO logins(Application, AppAccountName, IsActive, JobTitle, Department) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql);
 
