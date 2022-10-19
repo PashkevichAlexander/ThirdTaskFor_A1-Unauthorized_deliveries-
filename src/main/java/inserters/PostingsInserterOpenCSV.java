@@ -48,16 +48,16 @@ public class PostingsInserterOpenCSV {
             List list = csv.parse(setColumMapping(), csvReader);
 
             for (Object object : list) {
-                preparedStatement.setString(1, ((Employee) object).getMatDoc());
-                preparedStatement.setString(2, ((Employee) object).getItem());
-                preparedStatement.setString(3, ((Employee) object).getDocDate());
-                preparedStatement.setString(4, ((Employee) object).getPstngDate());
-                preparedStatement.setString(5, ((Employee) object).getMaterialDescription());
-                preparedStatement.setString(6, ((Employee) object).getQuantity());
-                preparedStatement.setString(7, ((Employee) object).getBUn());
-                preparedStatement.setString(8, ((Employee) object).getAmountLC());
-                preparedStatement.setString(9, ((Employee) object).getCrcy());
-                preparedStatement.setString(10, ((Employee) object).getUserName());
+                preparedStatement.setString(1, ((Employee) object).getMatDoc().replace("\t",""));
+                preparedStatement.setString(2, ((Employee) object).getItem().replace("\t",""));
+                preparedStatement.setString(3, ((Employee) object).getDocDate().replace("\t",""));
+                preparedStatement.setString(4, ((Employee) object).getPstngDate().replace("\t",""));
+                preparedStatement.setString(5, ((Employee) object).getMaterialDescription().replace("\t",""));
+                preparedStatement.setString(6, ((Employee) object).getQuantity().replace("\t",""));
+                preparedStatement.setString(7, ((Employee) object).getBUn().replace("\t",""));
+                preparedStatement.setString(8, ((Employee) object).getAmountLC().replace("\t",""));
+                preparedStatement.setString(9, ((Employee) object).getCrcy().replace("\t",""));
+                preparedStatement.setString(10, ((Employee) object).getUserName().replace("\t",""));
                 preparedStatement.addBatch();
                 preparedStatement.executeBatch();
             }
@@ -68,7 +68,7 @@ public class PostingsInserterOpenCSV {
             connection.close();
 
             long end = System.currentTimeMillis();
-            System.out.println("Execution Time: " + (end - start));
+            System.out.println("PostingsInserterOpenCSV Execution Time: " + (end - start));
         } catch (IOException ex) {
             System.err.println(ex);
         } catch (SQLException ex) {

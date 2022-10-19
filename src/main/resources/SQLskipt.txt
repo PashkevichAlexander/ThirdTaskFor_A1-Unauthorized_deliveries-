@@ -1,0 +1,27 @@
+create database ThirdTaskFor_A1;
+
+create table IF NOT exists logins(
+Application varchar(100),
+AppAccountName varchar(100),
+IsActive boolean,
+JobTitle varchar(100),
+Department varchar(100)
+);
+
+create table IF NOT exists postings(
+matDoc varchar(100),
+item varchar(100),
+docDate varchar(100),
+pstngDate varchar(100),
+materialDescription varchar(100),
+quantity varchar(100),
+bUn varchar(100),
+amountLC varchar(100),
+crcy varchar(100),
+userName varchar(100)
+);
+
+
+
+UPDATE postings JOIN logins ON postings.userName <> logins.AppAccountName SET postings.authorizeDelivery = 0;
+UPDATE postings INNER JOIN logins ON postings.userName = logins.AppAccountName SET postings.authorizeDelivery = 1 WHERE logins.IsActive = 1;

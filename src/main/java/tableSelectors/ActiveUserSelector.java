@@ -24,17 +24,26 @@ public class ActiveUserSelector {
                 exception.printStackTrace();
             }
             try (Statement statement = connection.createStatement()) {
-                statement.execute("UPDATE postings INNER JOIN logins ON postings.userNAme = logins.AppAccountName SET postings.authorizeDelivery = true WHERE logins.IsActive = true;");
+                statement.execute("create table IF NOT exists isActiveTable(AppAccountName varchar(100),IsActive boolean);");
             } catch (SQLException exception) {
                 exception.printStackTrace();
             }
             try (Statement statement = connection.createStatement()) {
-                statement.execute("UPDATE postings INNER JOIN logins ON postings.userName != logins.AppAccountName SET postings.authorizeDelivery = false;");
+                statement.execute("UPDATE postings INNER JOIN logins ON postings.userName <> logins.AppAccountName SET postings.authorizeDelivery = 0;");
             } catch (SQLException exception) {
                 exception.printStackTrace();
             }
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("UPDATE postings INNER JOIN logins ON postings.userName = logins.AppAccountName SET postings.authorizeDelivery = 1 WHERE logins.IsActive = 1;");
+            } catch (SQLException exception) {
+                exception.printStackTrace();
+            }
+
+            connection.commit();
+            connection.close();
+
             long end = System.currentTimeMillis();
-            System.out.println("Execution Time: " + (end - start));
+            System.out.println("ActiveUserSelector Execution Time: " + (end - start));
         }catch (SQLException ex) {
             ex.printStackTrace();
             try {
@@ -45,16 +54,3 @@ public class ActiveUserSelector {
         }
     }
 }
-
-//ALTER TABLE postings ADD COLUMN authorizeDelivery boolean AFTER userName;
-//
-//        UPDATE postings
-//        INNER JOIN logins ON postings.userNAme = logins.AppAccountName
-//        SET postings.authorizeDelivery = true
-//        WHERE logins.IsActive = true;
-//
-//        UPDATE postings
-//        INNER JOIN logins ON postings.userName != logins.AppAccountName
-//        SET postings.authorizeDelivery = false;
-//
-//        select * from postings;

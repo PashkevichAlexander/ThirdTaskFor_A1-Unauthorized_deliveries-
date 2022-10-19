@@ -77,7 +77,7 @@ public class LoginsInserterSuperCSV {
             connection.close();
 
             long end = System.currentTimeMillis();
-            System.out.println("Execution Time: " + (end - start));
+            System.out.println("LoginsInserterSuperCSV Execution Time: " + (end - start));
         } catch (IOException ex) {
             System.err.println(ex);
         } catch (SQLException ex) {
