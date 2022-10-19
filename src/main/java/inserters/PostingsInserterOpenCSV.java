@@ -1,4 +1,4 @@
-package Inserters;
+package inserters;
 
 import com.opencsv.CSVReader;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
@@ -7,22 +7,17 @@ import entity.Employee;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 
-public class PostingsInserter implements Runnable {
-//    @SuppressWarnings({"rawtypes", "unchecked"})
+public class PostingsInserterOpenCSV {
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void run() {
         String jdbcURL = "jdbc:mysql://localhost:3306/ThirdTaskFor_A1";
         String username = "root";
         String password = "12345";
 
         String csvFilename = "C:\\Users\\Asus\\IdeaProjects\\ThirdTaskFor_A1-Unauthorized_deliveries-\\src\\main\\resources\\postings.csv";
-
-        int batchSize = 20;
 
         Connection connection = null;
         try {
@@ -31,38 +26,44 @@ public class PostingsInserter implements Runnable {
 
             connection = DriverManager.getConnection(jdbcURL, username, password);
             connection.setAutoCommit(false);
-//
+
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("DROP TABLE IF EXISTS postings");
+            } catch (SQLException exception) {
+                exception.printStackTrace();
+            }
+
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("create table IF NOT exists postings( matDoc varchar(100), item varchar(100),   docDate varchar(100), pstngDate varchar(100),  materialDescription varchar(100), quantity varchar(100), bUn varchar(100), amountLC varchar(100), crcy varchar(100), userName varchar(100));");
+            } catch (SQLException exception) {
+                exception.printStackTrace();
+            }
+
             sql = "INSERT INTO postings(matDoc, item, docDate, pstngDate, materialDescription, quantity, bUn, amountLC, crcy, userName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             CsvToBean csv = new CsvToBean();
 
             CSVReader csvReader = new CSVReader(new FileReader(csvFilename), ';', '"', 2);
 
             List list = csv.parse(setColumMapping(), csvReader);
 
-            int count = 0;
-
             for (Object object : list) {
-//            Employee employee = (Employee) object;
-                System.out.println(((Employee) object).getBUn());
-                statement.setString(1, ((Employee) object).getMatDoc());
-                statement.setString(2, ((Employee) object).getItem());
-                statement.setString(3, ((Employee) object).getDocDate());
-                statement.setString(4, ((Employee) object).getPstngDate());
-                statement.setString(5, ((Employee) object).getMaterialDescription());
-                statement.setString(6, ((Employee) object).getQuantity());
-                statement.setString(7, ((Employee) object).getBUn());
-                statement.setString(8, ((Employee) object).getAmountLC());
-                statement.setString(9, ((Employee) object).getCrcy());
-                statement.setString(10, ((Employee) object).getUserName());
-                statement.addBatch();
-                if (count % batchSize == 0) {
-                    statement.executeBatch();
-                }
+                preparedStatement.setString(1, ((Employee) object).getMatDoc());
+                preparedStatement.setString(2, ((Employee) object).getItem());
+                preparedStatement.setString(3, ((Employee) object).getDocDate());
+                preparedStatement.setString(4, ((Employee) object).getPstngDate());
+                preparedStatement.setString(5, ((Employee) object).getMaterialDescription());
+                preparedStatement.setString(6, ((Employee) object).getQuantity());
+                preparedStatement.setString(7, ((Employee) object).getBUn());
+                preparedStatement.setString(8, ((Employee) object).getAmountLC());
+                preparedStatement.setString(9, ((Employee) object).getCrcy());
+                preparedStatement.setString(10, ((Employee) object).getUserName());
+                preparedStatement.addBatch();
+                preparedStatement.executeBatch();
             }
 
             csvReader.close();
-            statement.executeBatch();
+            preparedStatement.executeBatch();
             connection.commit();
             connection.close();
 
