@@ -5,7 +5,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-public class Employee implements Serializable
+public class Post implements Serializable
 {
     private static final long serialVersionUID = 1L;
     @Getter

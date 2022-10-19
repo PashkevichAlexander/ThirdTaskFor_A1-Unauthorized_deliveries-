@@ -11,8 +11,8 @@ Department varchar(100)
 create table IF NOT exists postings(
 matDoc varchar(100),
 item varchar(100),
-docDate varchar(100),
-pstngDate varchar(100),
+docDate date,
+pstngDate date,
 materialDescription varchar(100),
 quantity varchar(100),
 bUn varchar(100),
@@ -21,7 +21,23 @@ crcy varchar(100),
 userName varchar(100)
 );
 
+ALTER TABLE postings ADD COLUMN authorizeDelivery boolean AFTER userName;
+
+create table IF NOT exists someNoteByDate(
+matDoc varchar(100), item varchar(100),
+docDate date,
+pstngDate date,
+materialDescription varchar(100),
+quantity varchar(100),
+bUn varchar(100),
+amountLC varchar(100),
+crcy varchar(100),
+userName varchar(100),
+authorizeDelivery boolean
+);
 
 
 UPDATE postings JOIN logins ON postings.userName <> logins.AppAccountName SET postings.authorizeDelivery = 0;
 UPDATE postings INNER JOIN logins ON postings.userName = logins.AppAccountName SET postings.authorizeDelivery = 1 WHERE logins.IsActive = 1;
+
+insert into someNoteByDate SELECT * FROM postings WHERE pstngDate BETWEEN CURDATE() - INTERVAL 8 month AND CURDATE() and authorizeDelivery = 1;

@@ -1,16 +1,29 @@
 import inserters.LoginsInserterSuperCSV;
 import inserters.PostingsInserterOpenCSV;
+import service.TableSelectService;
 import tableSelectors.ActiveUserSelector;
 
 public class Runner {
     public static void main(String[] args) {
+
+
         LoginsInserterSuperCSV loginsInserterSuperCSV = new LoginsInserterSuperCSV();
         PostingsInserterOpenCSV postingsInserterOpenCSV = new PostingsInserterOpenCSV();
         ActiveUserSelector activeUserSelector = new ActiveUserSelector();
+        TableSelectService tableSelectService = new TableSelectService();
 
         loginsInserterSuperCSV.run();
         postingsInserterOpenCSV.run();
         activeUserSelector.run();
+
+//      Value of smth
+        int num = 1;
+//      typeOfPeriod(day,month,quarter,year)
+        String typeOfPeriod = "quarter";
+//      This status affects the selection(true = with authorizeDelivery, false = without authorizeDelivery)
+        Boolean isActiveStatus = false;
+        tableSelectService.get(num,typeOfPeriod,isActiveStatus);
+
 
 
     }

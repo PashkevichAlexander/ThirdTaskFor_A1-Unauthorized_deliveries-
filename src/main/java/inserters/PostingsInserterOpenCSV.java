@@ -3,11 +3,13 @@ package inserters;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
-import entity.Employee;
+import entity.Post;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class PostingsInserterOpenCSV {
@@ -34,7 +36,7 @@ public class PostingsInserterOpenCSV {
             }
 
             try (Statement statement = connection.createStatement()) {
-                statement.execute("create table IF NOT exists postings( matDoc varchar(100), item varchar(100),   docDate varchar(100), pstngDate varchar(100),  materialDescription varchar(100), quantity varchar(100), bUn varchar(100), amountLC varchar(100), crcy varchar(100), userName varchar(100));");
+                statement.execute("create table IF NOT exists postings( matDoc varchar(100), item varchar(100),   docDate date , pstngDate date,  materialDescription varchar(100), quantity varchar(100), bUn varchar(100), amountLC varchar(100), crcy varchar(100), userName varchar(100));");
             } catch (SQLException exception) {
                 exception.printStackTrace();
             }
@@ -48,16 +50,20 @@ public class PostingsInserterOpenCSV {
             List list = csv.parse(setColumMapping(), csvReader);
 
             for (Object object : list) {
-                preparedStatement.setString(1, ((Employee) object).getMatDoc().replace("\t",""));
-                preparedStatement.setString(2, ((Employee) object).getItem().replace("\t",""));
-                preparedStatement.setString(3, ((Employee) object).getDocDate().replace("\t",""));
-                preparedStatement.setString(4, ((Employee) object).getPstngDate().replace("\t",""));
-                preparedStatement.setString(5, ((Employee) object).getMaterialDescription().replace("\t",""));
-                preparedStatement.setString(6, ((Employee) object).getQuantity().replace("\t",""));
-                preparedStatement.setString(7, ((Employee) object).getBUn().replace("\t",""));
-                preparedStatement.setString(8, ((Employee) object).getAmountLC().replace("\t",""));
-                preparedStatement.setString(9, ((Employee) object).getCrcy().replace("\t",""));
-                preparedStatement.setString(10, ((Employee) object).getUserName().replace("\t",""));
+                String pstngDate =((Post) object).getPstngDate().replace("\t","").replace(".","-");
+                String docDate =((Post) object).getDocDate().replace("\t","").replace(".","-");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                preparedStatement.setString(1, ((Post) object).getMatDoc().replace("\t",""));
+                preparedStatement.setString(2, ((Post) object).getItem().replace("\t",""));
+                preparedStatement.setDate(3, Date.valueOf(LocalDate.parse(docDate, formatter).format(formatter2)));
+                preparedStatement.setDate(4, Date.valueOf(LocalDate.parse(pstngDate, formatter).format(formatter2)));
+                preparedStatement.setString(5, ((Post) object).getMaterialDescription().replace("\t",""));
+                preparedStatement.setString(6, ((Post) object).getQuantity().replace("\t",""));
+                preparedStatement.setString(7, ((Post) object).getBUn().replace("\t",""));
+                preparedStatement.setString(8, ((Post) object).getAmountLC().replace("\t",""));
+                preparedStatement.setString(9, ((Post) object).getCrcy().replace("\t",""));
+                preparedStatement.setString(10, ((Post) object).getUserName().replace("\t",""));
                 preparedStatement.addBatch();
                 preparedStatement.executeBatch();
             }
@@ -84,7 +90,7 @@ public class PostingsInserterOpenCSV {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static ColumnPositionMappingStrategy setColumMapping() {
         ColumnPositionMappingStrategy strategy = new ColumnPositionMappingStrategy();
-        strategy.setType(Employee.class);
+        strategy.setType(Post.class);
         String[] columns = new String[]{"matDoc", "item", "docDate", "pstngDate", "materialDescription", "quantity", "bUn", "amountLC", "crcy", "userName"};
         strategy.setColumnMapping(columns);
         return strategy;
