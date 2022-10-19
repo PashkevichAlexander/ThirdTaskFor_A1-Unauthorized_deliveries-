@@ -1,4 +1,4 @@
-package Inserters;
+package inserters;
 
 import entity.Logins;
 import org.supercsv.cellprocessor.constraint.NotNull;
@@ -9,12 +9,9 @@ import org.supercsv.prefs.CsvPreference;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
-public class LoginsInserter implements Runnable {
+public class LoginsInserterSuperCSV {
     public void run() {
         String jdbcURL = "jdbc:mysql://localhost:3306/ThirdTaskFor_A1";
         String username = "root";
@@ -26,13 +23,13 @@ public class LoginsInserter implements Runnable {
 
         Connection connection = null;
 
-        ICsvBeanReader beanReader = null;
+        ICsvBeanReader beanReader;
         CellProcessor[] processors = new CellProcessor[]{
-                new NotNull(), // course name
-                new NotNull(), // student name
-                new NotNull(), // timestamp
-                new NotNull(), // rating
-                new NotNull()// comment
+                new NotNull(),
+                new NotNull(),
+                new NotNull(),
+                new NotNull(),
+                new NotNull()
         };
 
         try {
@@ -41,42 +38,41 @@ public class LoginsInserter implements Runnable {
 
             connection = DriverManager.getConnection(jdbcURL, username, password);
             connection.setAutoCommit(false);
-//            sql = "create table IF NOT exists logins(" +
-//                    "Application varchar(100)," +
-//                    "AppAccountName varchar(100)," +
-//                    "IsActive boolean," +
-//                    "JobTitle varchar(100)," +
-//                    "Department varchar(100)" +
-//                    ");";
-//            connection.prepareStatement(sql);
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("DROP TABLE IF EXISTS logins");
+            } catch (SQLException exception) {
+                exception.printStackTrace();
+            }
+
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("create table IF NOT exists logins(Application varchar(100),AppAccountName varchar(100),IsActive boolean,JobTitle varchar(100),Department varchar(100))");
+            } catch (SQLException exception) {
+                exception.printStackTrace();
+            }
             sql = "INSERT INTO logins(Application, AppAccountName, IsActive, JobTitle, Department) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
             beanReader = new CsvBeanReader(new FileReader(csvFilePath), CsvPreference.STANDARD_PREFERENCE);
 
-            beanReader.getHeader(true); // skip header line
+            beanReader.getHeader(true);
 
             String[] header = {"Application", "AppAccountName", "IsActive", "JobTitle", "Department"};
-            Logins bean = null;
-
-            int count = 0;
+            Logins bean;
 
             while ((bean = beanReader.read(Logins.class, header, processors)) != null) {
 
-                statement.setString(1, bean.getApplication().replace("\t",""));
-                statement.setString(2, bean.getAppAccountName().replace("\t",""));
-                statement.setBoolean(3, bean.getIsActive().replace("\t","").equals("True"));
-                statement.setString(4, bean.getJobTitle().replace("\t",""));
-                statement.setString(5, bean.getDepartment().replace("\t",""));
+                preparedStatement.setString(1, bean.getApplication().replace("\t", ""));
+                preparedStatement.setString(2, bean.getAppAccountName().replace("\t", ""));
+                preparedStatement.setBoolean(3, bean.getIsActive().replace("\t", "").equals("True"));
+                preparedStatement.setString(4, bean.getJobTitle().replace("\t", ""));
+                preparedStatement.setString(5, bean.getDepartment().replace("\t", ""));
 
-                statement.addBatch();
+                preparedStatement.addBatch();
 
-                if (count % batchSize == 0) {
-                    statement.executeBatch();
-                }
+                preparedStatement.executeBatch();
             }
             beanReader.close();
-            statement.executeBatch();
+            preparedStatement.executeBatch();
             connection.commit();
             connection.close();
 
