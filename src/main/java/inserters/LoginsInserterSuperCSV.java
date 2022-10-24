@@ -1,5 +1,6 @@
 package inserters;
 
+import JDBCService.DBConnection;
 import entity.Logins;
 import org.supercsv.cellprocessor.constraint.NotNull;
 import org.supercsv.cellprocessor.ift.CellProcessor;
@@ -13,15 +14,7 @@ import java.sql.*;
 
 public class LoginsInserterSuperCSV {
     public void run() {
-        String jdbcURL = "jdbc:mysql://localhost:3306/ThirdTaskFor_A1";
-        String username = "root";
-        String password = "12345";
-
         String csvFilePath = "C:\\Users\\Asus\\IdeaProjects\\ThirdTaskFor_A1-Unauthorized_deliveries-\\src\\main\\resources\\logins.csv";
-
-        int batchSize = 20;
-
-        Connection connection = null;
 
         ICsvBeanReader beanReader;
         CellProcessor[] processors = new CellProcessor[]{
@@ -34,23 +27,14 @@ public class LoginsInserterSuperCSV {
 
         try {
             long start = System.currentTimeMillis();
-            String sql;
 
-            connection = DriverManager.getConnection(jdbcURL, username, password);
-            connection.setAutoCommit(false);
-            try (Statement statement = connection.createStatement()) {
-                statement.execute("DROP TABLE IF EXISTS logins");
-            } catch (SQLException exception) {
-                exception.printStackTrace();
-            }
+            Connection connection = DBConnection.getInstance().getConnection();
+            Statement statement = connection.createStatement();
 
-            try (Statement statement = connection.createStatement()) {
-                statement.execute("create table IF NOT exists logins(Application varchar(100),AppAccountName varchar(100),IsActive boolean,JobTitle varchar(100),Department varchar(100))");
-            } catch (SQLException exception) {
-                exception.printStackTrace();
-            }
-            sql = "INSERT INTO logins(Application, AppAccountName, IsActive, JobTitle, Department) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            statement.execute("DROP TABLE IF EXISTS logins");
+            statement.execute("create table IF NOT exists logins(Application varchar(100),AppAccountName varchar(100),IsActive boolean,JobTitle varchar(100),Department varchar(100))");
+
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO logins(Application, AppAccountName, IsActive, JobTitle, Department) VALUES (?, ?, ?, ?, ?)");
 
             beanReader = new CsvBeanReader(new FileReader(csvFilePath), CsvPreference.STANDARD_PREFERENCE);
 
@@ -68,12 +52,9 @@ public class LoginsInserterSuperCSV {
                 preparedStatement.setString(5, bean.getDepartment().replace("\t", ""));
 
                 preparedStatement.addBatch();
-
                 preparedStatement.executeBatch();
             }
             beanReader.close();
-            preparedStatement.executeBatch();
-            connection.commit();
             connection.close();
 
             long end = System.currentTimeMillis();
@@ -82,12 +63,6 @@ public class LoginsInserterSuperCSV {
             System.err.println(ex);
         } catch (SQLException ex) {
             ex.printStackTrace();
-
-            try {
-                connection.rollback();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

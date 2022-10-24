@@ -1,5 +1,6 @@
 package inserters;
 
+import JDBCService.DBConnection;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
@@ -15,34 +16,18 @@ import java.util.List;
 public class PostingsInserterOpenCSV {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void run() {
-        String jdbcURL = "jdbc:mysql://localhost:3306/ThirdTaskFor_A1";
-        String username = "root";
-        String password = "12345";
-
         String csvFilename = "C:\\Users\\Asus\\IdeaProjects\\ThirdTaskFor_A1-Unauthorized_deliveries-\\src\\main\\resources\\postings.csv";
 
-        Connection connection = null;
         try {
             long start = System.currentTimeMillis();
-            String sql;
 
-            connection = DriverManager.getConnection(jdbcURL, username, password);
-            connection.setAutoCommit(false);
+            Connection connection = DBConnection.getInstance().getConnection();
+            Statement statement = connection.createStatement();
 
-            try (Statement statement = connection.createStatement()) {
-                statement.execute("DROP TABLE IF EXISTS postings");
-            } catch (SQLException exception) {
-                exception.printStackTrace();
-            }
+            statement.execute("DROP TABLE IF EXISTS postings");
+            statement.execute("create table IF NOT exists postings( matDoc varchar(100), item varchar(100),   docDate date , pstngDate date,  materialDescription varchar(100), quantity varchar(100), bUn varchar(100), amountLC varchar(100), crcy varchar(100), userName varchar(100));");
 
-            try (Statement statement = connection.createStatement()) {
-                statement.execute("create table IF NOT exists postings( matDoc varchar(100), item varchar(100),   docDate date , pstngDate date,  materialDescription varchar(100), quantity varchar(100), bUn varchar(100), amountLC varchar(100), crcy varchar(100), userName varchar(100));");
-            } catch (SQLException exception) {
-                exception.printStackTrace();
-            }
-
-            sql = "INSERT INTO postings(matDoc, item, docDate, pstngDate, materialDescription, quantity, bUn, amountLC, crcy, userName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO postings(matDoc, item, docDate, pstngDate, materialDescription, quantity, bUn, amountLC, crcy, userName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             CsvToBean csv = new CsvToBean();
 
             CSVReader csvReader = new CSVReader(new FileReader(csvFilename), ';', '"', 2);
@@ -70,7 +55,6 @@ public class PostingsInserterOpenCSV {
 
             csvReader.close();
             preparedStatement.executeBatch();
-            connection.commit();
             connection.close();
 
             long end = System.currentTimeMillis();
@@ -79,11 +63,6 @@ public class PostingsInserterOpenCSV {
             System.err.println(ex);
         } catch (SQLException ex) {
             ex.printStackTrace();
-            try {
-                connection.rollback();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 

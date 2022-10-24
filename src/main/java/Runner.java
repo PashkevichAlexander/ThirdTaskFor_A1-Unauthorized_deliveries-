@@ -3,8 +3,10 @@ import inserters.PostingsInserterOpenCSV;
 import service.TableSelectService;
 import tableSelectors.ActiveUserSelector;
 
+import java.sql.SQLException;
+
 public class Runner {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
 
 
         LoginsInserterSuperCSV loginsInserterSuperCSV = new LoginsInserterSuperCSV();
