@@ -1,5 +1,6 @@
 import inserters.LoginsInserterSuperCSV;
 import inserters.PostingsInserterOpenCSV;
+import service.PostingsPersistence;
 import service.TableSelectService;
 import tableSelectors.ActiveUserSelector;
 
@@ -13,6 +14,7 @@ public class Runner {
         PostingsInserterOpenCSV postingsInserterOpenCSV = new PostingsInserterOpenCSV();
         ActiveUserSelector activeUserSelector = new ActiveUserSelector();
         TableSelectService tableSelectService = new TableSelectService();
+        PostingsPersistence postingsPersistence = new PostingsPersistence();
 
         loginsInserterSuperCSV.run();
         postingsInserterOpenCSV.run();
@@ -25,8 +27,9 @@ public class Runner {
 //      This status affects the selection(true = with authorizeDelivery, false = without authorizeDelivery)
         Boolean isActiveStatus = true;
         tableSelectService.get(num,typeOfPeriod,isActiveStatus);
-
+        postingsPersistence.findByDate("2022-07-25");
 
 
     }
 }
+
