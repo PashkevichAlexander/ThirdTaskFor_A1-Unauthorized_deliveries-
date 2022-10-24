@@ -23,7 +23,7 @@ public class Runner {
 //      typeOfPeriod(day,month,quarter,year)
         String typeOfPeriod = "quarter";
 //      This status affects the selection(true = with authorizeDelivery, false = without authorizeDelivery)
-        Boolean isActiveStatus = false;
+        Boolean isActiveStatus = true;
         tableSelectService.get(num,typeOfPeriod,isActiveStatus);
 
 

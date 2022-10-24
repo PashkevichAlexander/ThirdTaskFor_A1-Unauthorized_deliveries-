@@ -9,7 +9,6 @@ import java.sql.Statement;
 public class ActiveUserSelector {
     public void run() {
 
-
         try {
             long start = System.currentTimeMillis();
 
